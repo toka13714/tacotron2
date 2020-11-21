@@ -45,8 +45,8 @@ def create_hparams(hparams_string=None, verbose=False):
         # Model Parameters             #
         ################################
         n_symbols=len(symbols),
-        n_kanakanji_symbols=len(kanakanji_symbols),
-        n_yomi_symbols=len(yomi_symbols),
+        n_kanakanji_symbols=len(symbols),
+        n_yomi_symbols=97
         symbols_embedding_dim=512,
 
         # Encoder parameters

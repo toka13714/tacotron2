@@ -462,12 +462,13 @@ class Tacotron2(nn.Module):
         self.n_mel_channels = hparams.n_mel_channels
         self.n_frames_per_step = hparams.n_frames_per_step
         self.kanakanji_embedding = nn.Embedding(
-            hparams.n_kanakanji_symbols, hparams.symbols_embedding_dim / 2 )
+            hparams.n_kanakanji_symbols, int(hparams.symbols_embedding_dim / 2) )
         self.yomi_embedding = nn.Embedding(
-            hparams.n_yomi_symbols, hparams.symbols_embedding_dim / 2 )
+            hparams.n_yomi_symbols, int(hparams.symbols_embedding_dim / 2) )
         std = sqrt(2.0 / (hparams.n_symbols + hparams.symbols_embedding_dim))
         val = sqrt(3.0) * std  # uniform bounds for std
-        self.embedding.weight.data.uniform_(-val, val)
+        self.kanakanji_embedding.weight.data.uniform_(-val, val)
+        self.yomi_embedding.weight.data.uniform_(-val, val)
         self.encoder = Encoder(hparams)
         self.decoder = Decoder(hparams)
         self.postnet = Postnet(hparams)
@@ -475,8 +476,8 @@ class Tacotron2(nn.Module):
     def parse_batch(self, batch):
         kanakanji_text_padded, yomi_text_padded, input_lengths, mel_padded, gate_padded, \
             output_lengths = batch
-        kanakanji_text_padded = to_gpu(text_padded).long()
-        yomi_text_padded = to_gpu(text_padded).long()
+        kanakanji_text_padded = to_gpu(kanakanji_text_padded).long()
+        yomi_text_padded = to_gpu(yomi_text_padded).long()
         input_lengths = to_gpu(input_lengths).long()
         max_len = torch.max(input_lengths.data).item()
         mel_padded = to_gpu(mel_padded).float()
