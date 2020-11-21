@@ -461,8 +461,10 @@ class Tacotron2(nn.Module):
         self.fp16_run = hparams.fp16_run
         self.n_mel_channels = hparams.n_mel_channels
         self.n_frames_per_step = hparams.n_frames_per_step
-        self.embedding = nn.Embedding(
-            hparams.n_symbols, hparams.symbols_embedding_dim)
+        self.kanakanji_embedding = nn.Embedding(
+            hparams.n_kanakanji_symbols, hparams.symbols_embedding_dim / 2 )
+        self.yomi_embedding = nn.Embedding(
+            hparams.n_yomi_symbols, hparams.symbols_embedding_dim / 2 )
         std = sqrt(2.0 / (hparams.n_symbols + hparams.symbols_embedding_dim))
         val = sqrt(3.0) * std  # uniform bounds for std
         self.embedding.weight.data.uniform_(-val, val)
@@ -471,9 +473,10 @@ class Tacotron2(nn.Module):
         self.postnet = Postnet(hparams)
 
     def parse_batch(self, batch):
-        text_padded, input_lengths, mel_padded, gate_padded, \
+        kanakanji_text_padded, yomi_text_padded, input_lengths, mel_padded, gate_padded, \
             output_lengths = batch
-        text_padded = to_gpu(text_padded).long()
+        kanakanji_text_padded = to_gpu(text_padded).long()
+        yomi_text_padded = to_gpu(text_padded).long()
         input_lengths = to_gpu(input_lengths).long()
         max_len = torch.max(input_lengths.data).item()
         mel_padded = to_gpu(mel_padded).float()
@@ -481,7 +484,7 @@ class Tacotron2(nn.Module):
         output_lengths = to_gpu(output_lengths).long()
 
         return (
-            (text_padded, input_lengths, mel_padded, max_len, output_lengths),
+            (kanakanji_text_padded, yomi_text_padded, input_lengths, mel_padded, max_len, output_lengths),
             (mel_padded, gate_padded))
 
     def parse_output(self, outputs, output_lengths=None):
@@ -497,11 +500,13 @@ class Tacotron2(nn.Module):
         return outputs
 
     def forward(self, inputs):
-        text_inputs, text_lengths, mels, max_len, output_lengths = inputs
+        kanakanji_text_inputs, yomi_text_inputs, text_lengths, mels, max_len, output_lengths = inputs
         text_lengths, output_lengths = text_lengths.data, output_lengths.data
 
-        embedded_inputs = self.embedding(text_inputs).transpose(1, 2)
-
+        kanakanji_embedded_inputs = self.kanakanji_embedding(kanakanji_text_inputs).transpose(1, 2)
+        yomi_text_inputs = self.yomi_embedding(yomi_text_inputs).transpose(1, 2)
+        embedded_inputs = torch.cat((kanakanji_embedded_inputs, yomi_text_inputs), dim=1)
+        
         encoder_outputs = self.encoder(embedded_inputs, text_lengths)
 
         mel_outputs, gate_outputs, alignments = self.decoder(
@@ -514,8 +519,11 @@ class Tacotron2(nn.Module):
             [mel_outputs, mel_outputs_postnet, gate_outputs, alignments],
             output_lengths)
 
-    def inference(self, inputs):
-        embedded_inputs = self.embedding(inputs).transpose(1, 2)
+    def inference(self, kanakanji_inputs, yomi_imputs):
+        kanakanji_embedded_inputs = self.kanakanji_embedding(kanakanji_text_inputs).transpose(1, 2)
+        yomi_text_inputs = self.yomi_embedding(yomi_text_inputs).transpose(1, 2)
+        embedded_inputs = torch.cat((kanakanji_embedded_inputs, yomi_text_inputs), dim=1)
+        
         encoder_outputs = self.encoder.inference(embedded_inputs)
         mel_outputs, gate_outputs, alignments = self.decoder.inference(
             encoder_outputs)

@@ -1,5 +1,5 @@
 import tensorflow as tf
-from text import symbols
+from text import symbols, kanakanji_symbols, yomi_symbols
 
 
 def create_hparams(hparams_string=None, verbose=False):
@@ -45,6 +45,8 @@ def create_hparams(hparams_string=None, verbose=False):
         # Model Parameters             #
         ################################
         n_symbols=len(symbols),
+        n_kanakanji_symbols=len(kanakanji_symbols),
+        n_yomi_symbols=len(yomi_symbols),
         symbols_embedding_dim=512,
 
         # Encoder parameters
