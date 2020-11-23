@@ -521,8 +521,8 @@ class Tacotron2(nn.Module):
             output_lengths)
 
     def inference(self, kanakanji_inputs, yomi_imputs):
-        kanakanji_embedded_inputs = self.kanakanji_embedding(kanakanji_text_inputs).transpose(1, 2)
-        yomi_text_inputs = self.yomi_embedding(yomi_text_inputs).transpose(1, 2)
+        kanakanji_embedded_inputs = self.kanakanji_embedding(kanakanji_inputs).transpose(1, 2)
+        yomi_text_inputs = self.yomi_embedding(yomi_imputs).transpose(1, 2)
         embedded_inputs = torch.cat((kanakanji_embedded_inputs, yomi_text_inputs), dim=1)
         
         encoder_outputs = self.encoder.inference(embedded_inputs)
