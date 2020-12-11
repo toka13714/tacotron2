@@ -23,7 +23,7 @@ def load_filepaths_and_text(filename, split="|"):
     return filepaths_and_text
 
 
-def load_symbol_dict():
+def load_symbol_dict(filename):
     with open(filename) as f:
         symbol_dict = yaml.load(f)
     return symbol_dict
