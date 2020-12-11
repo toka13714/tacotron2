@@ -2,6 +2,8 @@ import numpy as np
 from scipy.io.wavfile import read
 import torch
 
+import yaml
+
 
 def get_mask_from_lengths(lengths):
     max_len = torch.max(lengths).item()
@@ -20,6 +22,11 @@ def load_filepaths_and_text(filename, split="|"):
         filepaths_and_text = [line.strip().split(split) for line in f]
     return filepaths_and_text
 
+
+def load_symbol_dict():
+    with open(filename) as f:
+        symbol_dict = yaml.load(f)
+    return symbol_dict
 
 def to_gpu(x):
     x = x.contiguous()

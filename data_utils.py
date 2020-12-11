@@ -4,7 +4,7 @@ import torch
 import torch.utils.data
 
 import layers
-from utils import load_wav_to_torch, load_filepaths_and_text
+from utils import load_wav_to_torch, load_filepaths_and_text, load_symbol_dict
 from text import text_to_sequence
 
 
@@ -24,13 +24,14 @@ class TextMelLoader(torch.utils.data.Dataset):
             hparams.filter_length, hparams.hop_length, hparams.win_length,
             hparams.n_mel_channels, hparams.sampling_rate, hparams.mel_fmin,
             hparams.mel_fmax)
+        self.symbol_dict = load_symbol_dict(hparams.symbol_dict_file)
         random.seed(hparams.seed)
         random.shuffle(self.audiopaths_and_text)
 
     def get_mel_text_pair(self, audiopath_and_text):
         # separate filename and text
-        audiopath, text = audiopath_and_text[0], audiopath_and_text[1]
-        text = self.get_text(text)
+        audiopath, kanakanji_text, yomi_text = audiopath_and_text[0], audiopath_and_text[1], audiopath_and_text[2]
+        text = self.get_text(kanakanji_text, yomi_text)
         mel = self.get_mel(audiopath)
         return (text, mel)
 
@@ -53,8 +54,16 @@ class TextMelLoader(torch.utils.data.Dataset):
 
         return melspec
 
-    def get_text(self, text):
-        text_norm = torch.IntTensor(text_to_sequence(text, self.text_cleaners))
+    def get_text(self, kanakanji_text, yomi_text):
+        # match the length of kana-kanji mixed sentences and reading sentences
+        matched_k_text = ''
+        matched_y_text = ''
+        for k, y in zip(kanakanji_text.split(' '), yomi_text.split(' ')):
+            matched_y_text += y
+            matched_k_text += k * len(y)
+        id_sequence = [ self.symbol_dict[(k, y)] for k, y in zip(matched_k_text, matched_y_text) ]
+        # to tensor
+        text_norm = torch.IntTensor(id_sequence)
         return text_norm
 
     def __getitem__(self, index):
