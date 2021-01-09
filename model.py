@@ -465,9 +465,11 @@ class Tacotron2(nn.Module):
             hparams.n_yomi_symbols, int(hparams.symbols_embedding_dim / 2))
         self.pos_embedding  = nn.Embedding(
             hparams.n_pos_symbols,  int(hparams.symbols_embedding_dim / 2))
-        std = sqrt(2.0 / (hparams.n_symbols + hparams.symbols_embedding_dim))
+        std = sqrt(2.0 / (hparams.n_yomi_symbols + int(hparams.symbols_embedding_dim / 2)))
         val = sqrt(3.0) * std  # uniform bounds for std
         self.yomi_embedding.weight.data.uniform_(-val, val)
+        std = sqrt(2.0 / (hparams.n_pos_symbols + int(hparams.symbols_embedding_dim / 2)))
+        val = sqrt(3.0) * std  # uniform bounds for std
         self.pos_embedding.weight.data.uniform_(-val, val)
         self.encoder = Encoder(hparams)
         self.decoder = Decoder(hparams)

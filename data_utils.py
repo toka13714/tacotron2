@@ -29,7 +29,7 @@ class TextMelLoader(torch.utils.data.Dataset):
 
     def get_mel_text_pair(self, audiopath_and_text):
         # separate filename and text
-        audiopath, orig_text, yomi_text, pos = audiopath_and_text[0], audiopath_and_text[1]
+        audiopath, yomi_text, pos = audiopath_and_text[0], audiopath_and_text[2], audiopath_and_text[3]
         yomi_text, pos = self.get_text(yomi_text, pos)
         mel = self.get_mel(audiopath)
         return (yomi_text, pos, mel)
@@ -99,7 +99,7 @@ class TextMelCollate():
         pos_padded = torch.LongTensor(len(batch), max_input_len)
         pos_padded.zero_()
         for i in range(len(ids_sorted_decreasing)):
-            text = batch[ids_sorted_decreasing[i]][0]
+            text = batch[ids_sorted_decreasing[i]][1]
             pos_padded[i, :text.size(0)] = text
 
         # Right zero-pad mel-spec

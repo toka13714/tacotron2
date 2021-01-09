@@ -7,7 +7,7 @@ The default is a set of ASCII characters that works well for English or text tha
 # from text import cmudict
 
 _punctuation = '-、。「」『』・ー！，．？'
-_pos = 'DKkMFRSIjJ'
+_pos = 'abcdefghijkl'
 _katakana = 'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴ'
 
 # Prepend "@" to ARPAbet symbols to ensure uniqueness (some are the same as uppercase letters):

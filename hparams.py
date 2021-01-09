@@ -45,7 +45,7 @@ def create_hparams(hparams_string=None, verbose=False):
         # Model Parameters             #
         ################################
         n_yomi_symbols=len(symbols),
-        n_pos_symbols=10,
+        n_pos_symbols=12,
         symbols_embedding_dim=512,
 
         # Encoder parameters
